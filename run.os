@@ -1,6 +1,9 @@
-﻿#use json
+﻿// todo: завести таблицу dateDone в которую писать дату начала и завершения загрузки
+
+#use json
 var gSet;
 var ver;
+
 procedure getSettings()
 	var setFile;
 	setFile = new File("auth.me");
