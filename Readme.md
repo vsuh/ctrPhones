@@ -5,4 +5,4 @@
 
 [os](http://oscript.io) скрипт для запуска из `Windows` планировщика
 
-репо проекта (https://github.com/vsuh/ctrPhones)
+репозиторий проекта (https://github.com/vsuh/ctrPhones)
