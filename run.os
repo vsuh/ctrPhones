@@ -8,7 +8,7 @@ procedure getSettings()
 		ВызватьИсключение "config file ""auth.me"" not found";
 	EndIf;
 	джон = Новый ПарсерJSON;
-	gSet = new Structure("server1c, ib1c, user1c, passwd1c, myHost, myUser, myPwd, myBase");
+	gSet = new Structure("com1cModel, server1c, ib1c, user1c, passwd1c, myHost, myUser, myPwd, myBase, myDriver");
 	ОбъектДж = джон.ПрочитатьJSON(Новый ЧтениеТекста("auth.me").Прочитать());
 	Для Каждого нн Из gSet Цикл
 		gSet[нн.Ключ] = ОбъектДж[нн.Ключ];
@@ -39,7 +39,7 @@ function run()
 	|
 	|";
 	Message("- create comconnector");
-	com = New ComObject("V83.ComConnector");
+	com = New ComObject(gSet["com1cModel"]);
 	Message("- authorize against IB mc_bnu");
 	connStr = "Srvr="""+gSet["server1c"]+""";Ref="""+gSet["ib1c"]+""";Usr="""+gSet["user1c"]+""";Pwd="""+gSet["passwd1c"]+""";";
 
@@ -61,7 +61,7 @@ function run()
 
 	Message("- connect to mysql");
 
-	myConnect.Open("DRIVER=MySQL ODBC 5.3 ANSI Driver;Server="+gSet["myHost"]+";Database="+gSet["myBase"]+";UID="+gSet["myUser"]+";PWD="+gSet["myPwd"]+";OPTION=3");
+	myConnect.Open("DRIVER="+gSet["myDriver"]+";Server="+gSet["myHost"]+";Database="+gSet["myBase"]+";UID="+gSet["myUser"]+";PWD="+gSet["myPwd"]+";OPTION=3");
 
 	myCMD		= new ComObject("ADODB.Command");
 	myCMD.ActiveConnection = myConnect;
