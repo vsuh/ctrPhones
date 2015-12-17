@@ -5,7 +5,7 @@ procedure getSettings()
 	var setFile;
 	setFile = new File("auth.me");
 	If Not setFile.Exists() Then
-		ВызватьИсключение """auth.me"" not found";
+		ВызватьИсключение "config file ""auth.me"" not found";
 	EndIf;
 	джон = Новый ПарсерJSON;
 	gSet = new Structure("server1c, ib1c, user1c, passwd1c, myHost, myUser, myPwd, myBase");
@@ -13,8 +13,6 @@ procedure getSettings()
 	Для Каждого нн Из gSet Цикл
 		gSet[нн.Ключ] = ОбъектДж[нн.Ключ];
 	КонецЦикла;
-
-//	FillPropertyValues(gSet, ОбъектДж);
 endprocedure
 
 function run()
@@ -45,12 +43,12 @@ function run()
 	Message("- authorize against IB mc_bnu");
 	connStr = "Srvr="""+gSet["server1c"]+""";Ref="""+gSet["ib1c"]+""";Usr="""+gSet["user1c"]+""";Pwd="""+gSet["passwd1c"]+""";";
 
-	Попытка
+	try
 		conn = com.Connect(connStr);
-	Исключение
+	exception
 		Message("Не удалось соединиться с ИБ "+gSet["server1c"]+"\"+gSet["ib1c"]+""+Символы.ПС+ОписаниеОшибки());
 		exit(2);
-	КонецПопытки;
+	endtry;
 	Message("- querying data from IB");
 
 	q = conn.newObject("Запрос");
@@ -78,14 +76,14 @@ function run()
 			|)VALUES (
 			|'"+res.Телефон+"', '"+res.ВидКИ+"', '"+СокрЛ(res.Контрагент)+"', '"+res.ОбъектКИ+"');";
 		myCMD.CommandText = q;
-		Попытка
+		try
 			myCMD.Execute();
-		Исключение
+		exception
 			Message(q);
 			err = ErrorInfo();
 			Message(getErrorFullDescription(err));
 			exit(4);
-		КонецПопытки;
+		endtry;
 	EndDo;
 endfunction
 
