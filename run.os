@@ -9,8 +9,6 @@
 #use json
 var gSet;
 var ver;
-var l_id;
-var myObj;
 var myCMD;
 var tbeg;
 var packetSize;
@@ -19,34 +17,33 @@ procedure getSettings()
 	var setFile;
 	setFile = new File("auth.me");
 
-	jsonObj = Новый ПарсерJSON;
+	jsonObj = new ПарсерJSON;
 	gSet = new Structure("com1cModel, server1c, ib1c, user1c, passwd1c, myHost, myUser, myPwd, myBase, myDriver",
 	"V83.ComConnector", "srv-1", "base1C_upp", "админ", "пароль", "192.168.1.1", "MYUSER", "MYPWD", "MYBASE", "{MySQL ODBC 3.51 Driver}");
-	If Not setFile.Exists() Then
+	if Not setFile.Exists() then
 		try
 			strJSN = jsonObj.ЗаписатьJSON(gSet);
-			txtCft = Новый ЗаписьТекста(setFile.ПолноеИмя);
+			txtCft = new ЗаписьТекста(setFile.ПолноеИмя);
 			txtCft.Записать(strJSN);
 			txtCft.Закрыть();
 			Message("Не найден конфигурационный файл. Создан пустой новый "+setFile.ПолноеИмя);
-			exit(3);
+			exit(1);
 		except
-			ТекстОшибки = ИнформацияОбОшибке().Описание;
-			Message(ТекстОшибки);
-			exit(5);
+	        err = ErrorInfo();
+    		Message(getErrorFullDescription(err));
+			exit(2);
 		endtry;
 	else
-		ОбъектДж = jsonObj.ПрочитатьJSON(Новый ЧтениеТекста("auth.me").Прочитать());
-		Для Каждого нн Из gSet Цикл
-			gSet[нн.Ключ] = ОбъектДж[нн.Ключ];
+		ОбъектДж = jsonObj.ПрочитатьJSON(new ЧтениеТекста("auth.me").Прочитать());
+		Для каждого kk Из gSet Цикл
+			gSet[kk.Key] = ОбъектДж[kk.Key];
 		КонецЦикла;
 	endIf;
-
 endprocedure
 
 function run()
     var cut_tbl;
-    cut_tbl = false;
+    cut_tbl = true;
     iq = 0;
     tbeg = CurrentDate();
     packetSize = 100;
@@ -79,16 +76,18 @@ function run()
 
 	Message("- create comconnector");
 	com = New ComObject(gSet["com1cModel"]);
-	Message("- authorize against IB mc_bnu");
+	Message("- authorize against IB "+gSet["ib1c"]);
 	connStr = "Srvr="""+gSet["server1c"]+""";Ref="""+gSet["ib1c"]+""";Usr="""+gSet["user1c"]+""";Pwd="""+gSet["passwd1c"]+""";";
 
 	try
 		conn = com.Connect(connStr);
 	except
 		Message("Не удалось соединиться с ИБ "+gSet["server1c"]+"\"+gSet["ib1c"]+""+Символы.ПС+ОписаниеОшибки());
-		exit(2);
+   		err = ErrorInfo();
+		Message(getErrorFullDescription(err));
+		exit(3);
 	endtry;
-	Message("- querying data from IB");
+	Message("- querying data from IB "+gSet["ib1c"]);
 
 	q = conn.newObject("Запрос");
 	q.text = queryText;
@@ -116,7 +115,7 @@ function run()
             endif;
         enddo;
         if IsBlankString(d) then break; endif;
-        d = Лев(d, StrLen(d) - 1);
+        d = Left(d, StrLen(d) - 1);
         iq = iq + 1;
 
    		myCMD.CommandText = q+d;
@@ -126,7 +125,7 @@ function run()
 			Message(q);
 			err = ErrorInfo();
 			Message(getErrorFullDescription(err));
-			exit(4);
+			exit(5);
 		endtry;
     enddo;
 	setDateStamp(cut_tbl, true);
@@ -135,7 +134,7 @@ endfunction
 
 procedure setDateStamp(cut = true, reg = false)
 	getMyConnection();
-    if cut then
+    if cut and not reg then
     q = "TRUNCATE table `loads_time`";
         myCMD.CommandText = q;
         try
@@ -143,9 +142,8 @@ procedure setDateStamp(cut = true, reg = false)
         except
 			Message("ERROR:: "+myCMD.CommandText);
 			err = ErrorInfo();
-			Message(err);
 			Message(getErrorFullDescription(err));
-			exit(11);
+			exit(6);
         endtry;
     endif;
     if reg then
@@ -159,15 +157,12 @@ procedure setDateStamp(cut = true, reg = false)
 		except
 			Message("ERROR:: "+q);
 			err = ErrorInfo();
-			Message(err);
 			Message(getErrorFullDescription(err));
-			exit(4);
+			exit(7);
 		endtry;
 
     else //
     endif;
-
-
 endprocedure
 
 function getErrorFullDescription(Err)
@@ -196,14 +191,13 @@ procedure getMyConnection()
 		Message("conn str: " + myConnStr);
 		err = ErrorInfo();
 		Message(getErrorFullDescription(err));
-		exit(6);
+		exit(8);
 	endtry;
 	myCMD		= new ComObject("ADODB.Command");
 	myCMD.ActiveConnection = myObj;
-
 endprocedure
 //--------------------------------------------------------------
-ver = "1.1.2 2015@VSCraft";
+ver = "1.1.3 2015@VSCraft";
 
 Message("*** Start : "+CurrentDate());
 run();
