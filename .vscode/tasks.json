@@ -1,47 +1,58 @@
 {
-	"version": "0.1.0",
-	"windows": {
-		"command": "oscript.exe"
-	},
-	"linux": {
-		"command": "/opt/bin/oscript"
-	},
-	"isShellCommand": true,
-	"showOutput": "silent",
-	"args": [
-		"-encoding=utf-8"
-	],
-	"tasks": [
-		{
-			"taskName": "ONESCRIPT: compile",
-			"args": [
-				"-compile",
-				"${file}"
-			],
-			"echoCommand": true,
-			"showOutput": "always",
-			"suppressTaskName": true,
-			"isBuildCommand": false
-		},
-		{
-			"taskName": "ONESCRIPT: run",
-			"args": [
-				"${file}"
-			],
-			"echoCommand": true,
-			"showOutput": "always",
-			"suppressTaskName": true,
-			"isBuildCommand": true,
-			"problemMatcher": {
-				"fileLocation": "absolute",
-				"pattern": {
- 			"regexp": "^{Модуль\\s+(.*)\\s\\/\\s.*:\\s+(\\d+)\\s+\\/\\s+(.*)}$",
-					"file": 1,
-					//"line": 2,
-					"location": 2,
-					"message": 3
-				}
-			}
-		}
-	]
+    "version": "0.1.0",
+    "windows": {
+        "command": "oscript.exe"
+    },
+    "linux": {
+        "command": "/opt/bin/oscript"
+    },
+    "isShellCommand": true,
+    "showOutput": "silent",
+    "args": [
+        "-encoding=utf-8"
+    ],
+    "tasks": [
+        {
+            "taskName": "ONESCRIPT: compile",
+            "args": [
+                "-compile",
+                "${file}"
+            ],
+            "echoCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            "isBuildCommand": false,
+            "problemMatcher": {
+                "fileLocation": "absolute",
+                "pattern": {
+                    "regexp": "^{Модуль\\s+(.*)\\s\\/\\s.*:\\s+(\\d+)\\s+\\/\\s+(.*)}$",
+                    "file": 1,
+                    //"line": 2,
+                    "location": 2,
+                    "message": 3
+                }
+            }
+        },
+        {
+            "taskName": "ONESCRIPT: run",
+            "args": [
+                "${file}"
+            ],
+            "echoCommand": true,
+            "showOutput": "always",
+            "suppressTaskName": true,
+            "isBuildCommand": true,
+            "problemMatcher": {
+                "fileLocation": "absolute",
+                "pattern": {
+                    //"regexp": "^\\{\\#(.*)\\[(\\d+)\\]$^.*$^(.*)\\#\\}$",
+                    "regexp": "\\{\\#(.*)\\[(\\d+)\\]\\s+\\/\\s+(.*)\\#\\}\\s+(.*)",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3,
+                    "code": 4
+                }
+            }
+        }
+    ]
 }

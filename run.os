@@ -1,13 +1,19 @@
-﻿// todo: завести таблицу dateDone в которую писать дату начала и завершения загрузки
+﻿// *** Загрузка РС:КонтактнаяИнформация в mysql таблицу
+//
+// OK!todo: завести таблицу dateDone в которую писать дату начала и завершения загрузки [procedure setDateStamp]
 // OK!todo: сделать форрмирование файла auth.me при его отсутствии со значениями по-умолчанию
-// todo: сделать создание ком объектов в попытке с выходом с разными rc при неудаче
-// todo: открытие\соединение сделать в попытке с разными rc при неудаче
+// OK!todo: сделать создание ком объектов в попытке с выходом с разными rc при неудаче
+// OK!todo: открытие\соединение сделать в попытке с разными rc при неудаче
+// todo: сделать парсер ошибок выполнения в tasks.json
+// OK!todo: сделать загрузку в таблицу по несколько записей за операцию
 #use json
 var gSet;
 var ver;
 var l_id;
 var myObj;
 var myCMD;
+var tbeg;
+var packetSize;
 
 procedure getSettings()
 	var setFile;
@@ -24,7 +30,7 @@ procedure getSettings()
 			txtCft.Закрыть();
 			Message("Не найден конфигурационный файл. Создан пустой новый "+setFile.ПолноеИмя);
 			exit(3);
-		exception
+		except
 			ТекстОшибки = ИнформацияОбОшибке().Описание;
 			Message(ТекстОшибки);
 			exit(5);
@@ -39,7 +45,12 @@ procedure getSettings()
 endprocedure
 
 function run()
-	getSettings();
+    var cut_tbl;
+    cut_tbl = false;
+    iq = 0;
+    tbeg = CurrentDate();
+    packetSize = 100;
+    getSettings();
 	queryText = "ВЫБРАТЬ
 	|	ПредставлениеСсылки(ки.Объект) КАК ОбъектКИ,
 	|	ВЫБОР
@@ -64,7 +75,7 @@ function run()
 
 	Message("- create mysql object "+gSet["myDriver"]);
 	getMyConnection();
-	setDateStamp(true);
+	setDateStamp(cut_tbl, false);
 
 	Message("- create comconnector");
 	com = New ComObject(gSet["com1cModel"]);
@@ -73,7 +84,7 @@ function run()
 
 	try
 		conn = com.Connect(connStr);
-	exception
+	except
 		Message("Не удалось соединиться с ИБ "+gSet["server1c"]+"\"+gSet["ib1c"]+""+Символы.ПС+ОписаниеОшибки());
 		exit(2);
 	endtry;
@@ -84,18 +95,31 @@ function run()
 	res = q.Execute().Выбрать();
 
 
-	myCMD.CommandText = "DELETE from phoneList";
-	myCMD.Execute();
+	myCMD.CommandText = "truncate table `phoneList`;";
+	try
+		myCMD.Execute();
+	except
+		Message(myCMD.CommandText);
+		err = ErrorInfo();
+		Message(getErrorFullDescription(err));
+		exit(4);
+	endtry;
 
-	exit(11);
-	Message("- data processing");
+	Message("- data processing ("+res.Count()+" recs.)");
+    while true do
+    	q = "INSERT INTO `phoneList` (`phone`, `type`, `cntr`, `face`) VALUES ";
+        d = "";
+        for i = 1 to packetSize do
+            if res.Next() then
+                d = d + "
+                | ('" + res.Телефон + "', '" +res.ВидКИ+"', '"+triml(res.Контрагент)+"', '"+res.ОбъектКИ+"'),";
+            endif;
+        enddo;
+        if IsBlankString(d) then break; endif;
+        d = Лев(d, StrLen(d) - 1);
+        iq = iq + 1;
 
-	While res.Next() do
-		q = "INSERT INTO `phoneList` (
-			|`phone`, `type`, `cntr`, `face`
-			|)VALUES (
-			|'"+res.Телефон+"', '"+res.ВидКИ+"', '"+СокрЛ(res.Контрагент)+"', '"+res.ОбъектКИ+"');";
-		myCMD.CommandText = q;
+   		myCMD.CommandText = q+d;
 		try
 			myCMD.Execute();
 		except
@@ -104,28 +128,57 @@ function run()
 			Message(getErrorFullDescription(err));
 			exit(4);
 		endtry;
-	EndDo;
-	setDateStamp(false);
+    enddo;
+	setDateStamp(cut_tbl, true);
 
 endfunction
 
-procedure setDateStamp(beg = true)
+procedure setDateStamp(cut = true, reg = false)
 	getMyConnection();
-	q = "";
-	myCMD.CommandText = q;
-	rs = myCMD.Execute();
-	Message(rs[0]["tm_id"]);
+    if cut then
+    q = "TRUNCATE table `loads_time`";
+        myCMD.CommandText = q;
+        try
+            myCMD.Execute();
+        except
+			Message("ERROR:: "+myCMD.CommandText);
+			err = ErrorInfo();
+			Message(err);
+			Message(getErrorFullDescription(err));
+			exit(11);
+        endtry;
+    endif;
+    if reg then
+    duration = Round(CurrentDate() - tbeg, 3);
+        q = "insert into `loads_time` (`exec_time`, `duration`, `success`
+        |  ) VALUES (
+        |  '"+Формат(ТекущаяДата(), "ДФ='yyyy-MM-dd HH:mm:ss'")+"', "+duration+", "+packetSize+");";
+                myCMD.CommandText = q;
+    	try
+  			myCMD.Execute();
+		except
+			Message("ERROR:: "+q);
+			err = ErrorInfo();
+			Message(err);
+			Message(getErrorFullDescription(err));
+			exit(4);
+		endtry;
+
+    else //
+    endif;
+
+
 endprocedure
 
-function getErrorFullDescription(Ош)
-	ТекстОшибки="";
-	Пока Ош <> Неопределено Цикл
-		Если Ош.Причина <> Неопределено Тогда
-			ТекстОшибки = ТекстОшибки +" // стр. "+Ош.ИсходнаяСтрока+" : // "+ Ош.Причина.Описание;
-		КонецЕсли;
-		Ош = Ош.Причина;
-	КонецЦикла;
-	Возврат ТекстОшибки;
+function getErrorFullDescription(Err)
+	ErrorText="";
+	while Err <> undefined do
+		if Err.Cause <> undefined then
+			ErrorText = ErrorText +"{#"+Err.ModuleName+" ["+Err.LineNumber+"] "+" / "+ Err.Cause.Description +"#}"+Err.SourceLine;
+		endif;
+		Err = Err.Cause;
+	enddo;
+	return ErrorText;
 endfunction
 
 procedure getMyConnection()
@@ -139,8 +192,8 @@ procedure getMyConnection()
 	myConnStr = "DRIVER="+gSet["myDriver"]+";Server="+gSet["myHost"]+";Database="+gSet["myBase"]+";UID="+gSet["myUser"]+";PWD="+gSet["myPwd"]+";OPTION=3";
 	try
 		myObj.Open(myConnStr);
-	exception
-		Message("conn str: "+myConnStr);
+	except
+		Message("conn str: " + myConnStr);
 		err = ErrorInfo();
 		Message(getErrorFullDescription(err));
 		exit(6);
@@ -150,7 +203,8 @@ procedure getMyConnection()
 
 endprocedure
 //--------------------------------------------------------------
-ver = "1.0.3 2015@VSCraft";
+ver = "1.1.2 2015@VSCraft";
+
 Message("*** Start : "+CurrentDate());
 run();
 Message("*** Finish: "+CurrentDate());
