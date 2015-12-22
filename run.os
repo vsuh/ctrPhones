@@ -197,7 +197,7 @@ procedure getMyConnection()
 	myCMD.ActiveConnection = myObj;
 endprocedure
 //--------------------------------------------------------------
-ver = "1.1.3 2015@VSCraft";
+ver = "1.1.4 2015@VSCraft";
 
 Message("*** Start : "+CurrentDate());
 run();
