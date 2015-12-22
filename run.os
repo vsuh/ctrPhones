@@ -184,7 +184,7 @@ procedure getMyConnection()
 	myObj 	= new ComObject("ADODB.Connection");
 
 	Message("- connect to mysql");
-	myConnStr = "DRIVER="+gSet["myDriver"]+";Server="+gSet["myHost"]+";Database="+gSet["myBase"]+";UID="+gSet["myUser"]+";PWD="+gSet["myPwd"]+";OPTION=3";
+	myConnStr = "DRIVER="+gSet["myDriver"]+";Server="+gSet["myHost"]+";Database="+gSet["myBase"]+";UID="+gSet["myUser"]+";PWD="+gSet["myPwd"]+";OPTION=3;charset=UTF8;";
 	try
 		myObj.Open(myConnStr);
 	except
