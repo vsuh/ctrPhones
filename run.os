@@ -18,8 +18,8 @@ procedure getSettings()
 	setFile = new File("auth.me");
 
 	jsonObj = new ПарсерJSON;
-	gSet = new Structure("com1cModel, server1c, ib1c, user1c, passwd1c, myHost, myUser, myPwd, myBase, myDriver",
-	"V83.ComConnector", "srv-1", "base1C_upp", "админ", "пароль", "192.168.1.1", "MYUSER", "MYPWD", "MYBASE", "{MySQL ODBC 3.51 Driver}");
+	gSet = new Structure("com1cModel, server1c, ib1c, user1c, passwd1c, myHost, myUser, myPwd, myBase, myDriver, myCharset",
+	"V83.ComConnector", "srv-1", "base1C_upp", "админ", "пароль", "192.168.1.1", "MYUSER", "MYPWD", "MYBASE", "{MySQL ODBC 3.51 Driver}", "utf8");
 	if Not setFile.Exists() then
 		try
 			strJSN = jsonObj.ЗаписатьJSON(gSet);
@@ -184,7 +184,9 @@ procedure getMyConnection()
 	myObj 	= new ComObject("ADODB.Connection");
 
 	Message("- connect to mysql");
-	myConnStr = "DRIVER="+gSet["myDriver"]+";Server="+gSet["myHost"]+";Database="+gSet["myBase"]+";UID="+gSet["myUser"]+";PWD="+gSet["myPwd"]+";OPTION=3;charset=UTF8;";
+	myConnStr = "DRIVER="+gSet["myDriver"]+";Server="+gSet["myHost"]+";Database="
+            + gSet["myBase"]+";UID="+gSet["myUser"]+";PWD="+gSet["myPwd"]
+            + ";OPTION=3;charset="+gSet["myCharset"]+";";
 	try
 		myObj.Open(myConnStr);
 	except
@@ -197,7 +199,7 @@ procedure getMyConnection()
 	myCMD.ActiveConnection = myObj;
 endprocedure
 //--------------------------------------------------------------
-ver = "1.1.4 2015@VSCraft";
+ver = "1.1.5 2015@VSCraft";
 
 Message("*** Start : "+CurrentDate());
 run();
