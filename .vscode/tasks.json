@@ -15,8 +15,8 @@
         {
             "taskName": "ONESCRIPT: compile",
             "args": [
-                "-compile",
-                "${file}"
+                "-make",
+                "${file} exe.exe"
             ],
             "echoCommand": true,
             "showOutput": "always",

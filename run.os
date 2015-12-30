@@ -150,7 +150,7 @@ procedure setDateStamp(cut = true, reg = false)
     duration = Round(CurrentDate() - tbeg, 3);
         q = "insert into `loads_time` (`exec_time`, `duration`, `success`
         |  ) VALUES (
-        |  '"+Формат(ТекущаяДата(), "ДФ='yyyy-MM-dd HH:mm:ss'")+"', "+duration+", "+packetSize+");";
+        |  '"+Format((), "ДФ='yyyy-MM-dd HH:mm:ss'")+"', "+duration+", "+packetSize+");";
                 myCMD.CommandText = q;
     	try
   			myCMD.Execute();
@@ -161,7 +161,7 @@ procedure setDateStamp(cut = true, reg = false)
 			exit(7);
 		endtry;
 
-    else //
+    else
     endif;
 endprocedure
 
@@ -195,11 +195,11 @@ procedure getMyConnection()
 		Message(getErrorFullDescription(err));
 		exit(8);
 	endtry;
-	myCMD		= new ComObject("ADODB.Command");
+	myCMD = new ComObject("ADODB.Command");
 	myCMD.ActiveConnection = myObj;
 endprocedure
 //--------------------------------------------------------------
-ver = "1.1.5 2015@VSCraft";
+ver = "1.1.6 2015@VSCraft";
 
 Message("*** Start : "+CurrentDate());
 run();
