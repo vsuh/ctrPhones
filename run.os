@@ -119,14 +119,14 @@ function run()
         iq = iq + 1;
 
    		myCMD.CommandText = q+d;
-		try
-			myCMD.Execute();
-		except
-			Message(q);
-			err = ErrorInfo();
-			Message(getErrorFullDescription(err));
-			exit(5);
-		endtry;
+			try
+				myCMD.Execute();
+			except
+				Message(q);
+				err = ErrorInfo();
+				Message(getErrorFullDescription(err));
+				exit(5);
+			endtry;
     enddo;
 	setDateStamp(cut_tbl, true);
 
@@ -147,19 +147,19 @@ procedure setDateStamp(cut = true, reg = false)
         endtry;
     endif;
     if reg then
-    duration = Round(CurrentDate() - tbeg, 3);
-        q = "insert into `loads_time` (`exec_time`, `duration`, `success`
-        |  ) VALUES (
-        |  '" + Format(ТекущаяДата(), "ДФ='yyyy-MM-dd HH:mm:ss'") + "', " + duration + ", " + packetSize + ");";
-                myCMD.CommandText = q;
-    	try
-  			myCMD.Execute();
-		except
-			Message("ERROR:: "+q);
-			err = ErrorInfo();
-			Message(getErrorFullDescription(err));
-			exit(7);
-		endtry;
+			duration = Round(CurrentDate() - tbeg, 3);
+					q = "insert into `loads_time` (`exec_time`, `duration`, `success`
+					|  ) VALUES (
+					|  '" + Format(ТекущаяДата(), "ДФ='yyyy-MM-dd HH:mm:ss'") + "', " + duration + ", " + packetSize + ");";
+									myCMD.CommandText = q;
+			try
+				myCMD.Execute();
+			except
+				Message("ERROR:: "+q);
+				err = ErrorInfo();
+				Message(getErrorFullDescription(err));
+				exit(7);
+			endtry;
 
     else
     endif;
