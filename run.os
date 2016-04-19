@@ -4,7 +4,7 @@
 // OK!todo: сделать форрмирование файла auth.me при его отсутствии со значениями по-умолчанию
 // OK!todo: сделать создание ком объектов в попытке с выходом с разными rc при неудаче
 // OK!todo: открытие\соединение сделать в попытке с разными rc при неудаче
-// todo: сделать парсер ошибок выполнения в tasks.json
+// OK!todo: сделать парсер ошибок выполнения в tasks.json
 // OK!todo: сделать загрузку в таблицу по несколько записей за операцию
 #use json
 var gSet;
@@ -23,10 +23,10 @@ procedure getSettings()
 	if Not setFile.Exists() then
 		try
 			strJSN = jsonObj.ЗаписатьJSON(gSet);
-			txtCft = new ЗаписьТекста(setFile.ПолноеИмя);
+			txtCft = new TextWriter(setFile.FullName);
 			txtCft.Записать(strJSN);
 			txtCft.Закрыть();
-			Message("Не найден конфигурационный файл. Создан пустой новый "+setFile.ПолноеИмя);
+			Message("Не найден конфигурационный файл. Создан пустой новый "+setFile.FullName);
 			exit(1);
 		except
 	        err = ErrorInfo();
@@ -34,10 +34,10 @@ procedure getSettings()
 			exit(2);
 		endtry;
 	else
-		ОбъектДж = jsonObj.ПрочитатьJSON(new ЧтениеТекста("auth.me").Прочитать());
-		Для каждого kk Из gSet Цикл
+		ОбъектДж = jsonObj.ПрочитатьJSON(new TextReader("auth.me").Read());
+		For each kk in gSet do
 			gSet[kk.Key] = ОбъектДж[kk.Key];
-		КонецЦикла;
+		EndDo;
 	endIf;
 endprocedure
 
@@ -150,7 +150,7 @@ procedure setDateStamp(cut = true, reg = false)
     duration = Round(CurrentDate() - tbeg, 3);
         q = "insert into `loads_time` (`exec_time`, `duration`, `success`
         |  ) VALUES (
-        |  '"+Format((), "ДФ='yyyy-MM-dd HH:mm:ss'")+"', "+duration+", "+packetSize+");";
+        |  '" + Format(ТекущаяДата(), "ДФ='yyyy-MM-dd HH:mm:ss'") + "', " + duration + ", " + packetSize + ");";
                 myCMD.CommandText = q;
     	try
   			myCMD.Execute();
@@ -183,7 +183,7 @@ procedure getMyConnection()
 
 	myObj 	= new ComObject("ADODB.Connection");
 
-	Message("- connect to mysql");
+	Message("- connect to mysql ("+gSet["myBase"]+"\"+gSet["myHost"]+")");
 	myConnStr = "DRIVER="+gSet["myDriver"]+";Server="+gSet["myHost"]+";Database="
             + gSet["myBase"]+";UID="+gSet["myUser"]+";PWD="+gSet["myPwd"]
             + ";OPTION=3;charset="+gSet["myCharset"]+";";
